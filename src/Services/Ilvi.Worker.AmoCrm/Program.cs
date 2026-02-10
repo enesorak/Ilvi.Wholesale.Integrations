@@ -1,4 +1,5 @@
 using Hangfire;
+using Ilvi.Modules.AmoCrm.Abstractions;
 using Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Data;
 using Ilvi.Worker.AmoCrm.Endpoints;  // Endpointler burada
 using Ilvi.Worker.AmoCrm.Extensions; // Extensionlar burada
@@ -32,7 +33,7 @@ using (var scope = app.Services.CreateScope())
         
         // Varsa eksik migration'ları uygular (Tablo yoksa oluşturur, kolon değiştiyse günceller)
         await context.Database.MigrateAsync();
-        
+        await SeedSettingsFromAppSettingsAsync(services, builder.Configuration, logger);
         logger.LogInformation("✅ Veritabanı başarıyla güncellendi!");
     }
     catch (Exception ex)
@@ -43,7 +44,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
+app.MapSettingsEndpoints();
 
 // 4. Jobları Başlatma (İlk Kurulum)
 // Uygulama her başladığında varsayılan jobları tekrar kaydeder (Idempotent)
@@ -81,6 +82,57 @@ using (var scope = app.Services.CreateScope())
     // --- EVENTS & MESSAGES ---
     recurringJobManager.AddOrUpdate<CrmJobs>("sync-events", job => job.SyncEvents(null!, default), Cron.Hourly());
     recurringJobManager.AddOrUpdate<CrmJobs>("sync-messages", job => job.SyncMessages(null!, default), Cron.MinuteInterval(15));
-}
 
+recurringJobManager.AddOrUpdate<CrmJobs>(
+    "sync-users", 
+    job => job.SyncUsers(null!, default), 
+    Cron.Daily(5, 10) // Her gün 05:10'da
+);}
 app.Run();
+
+// İlk kurulumda appsettings.json'daki değerleri DB'ye aktarır
+static async Task SeedSettingsFromAppSettingsAsync(IServiceProvider services, IConfiguration configuration, ILogger logger)
+{
+    var settingsService = services.GetRequiredService<ISettingsService>();
+    
+    // Mevcut DB ayarlarını kontrol et
+    var existingSettings = await settingsService.GetByCategoryAsync("AmoCrm");
+    
+    // BaseUrl boşsa, appsettings'den aktar
+    var baseUrlSetting = existingSettings.FirstOrDefault(s => s.Key == "BaseUrl");
+    if (baseUrlSetting == null || string.IsNullOrEmpty(baseUrlSetting.Value) || baseUrlSetting.Value == "https://example.amocrm.ru/api/v4/")
+    {
+        var baseUrl = configuration["AmoCrm:BaseUrl"];
+        var accessToken = configuration["AmoCrm:AccessToken"];
+        var pageSize = configuration["AmoCrm:PageSize"];
+        var requestDelay = configuration["AmoCrm:RequestDelayMs"];
+        
+        if (!string.IsNullOrEmpty(baseUrl))
+        {
+            logger.LogInformation("📥 appsettings.json'dan DB'ye ayarlar aktarılıyor...");
+            
+            await settingsService.SetAsync("AmoCrm", "BaseUrl", baseUrl, "System-Seed");
+            
+            if (!string.IsNullOrEmpty(accessToken))
+                await settingsService.SetAsync("AmoCrm", "AccessToken", accessToken, "System-Seed");
+            
+            if (!string.IsNullOrEmpty(pageSize))
+                await settingsService.SetAsync("AmoCrm", "PageSize", pageSize, "System-Seed");
+            
+            if (!string.IsNullOrEmpty(requestDelay))
+                await settingsService.SetAsync("AmoCrm", "RequestDelayMs", requestDelay, "System-Seed");
+            
+            // Sync Settings
+            var eventsLookBack = configuration["AmoCrm:SyncSettings:EventsLookBackMonths"];
+            var messagesLookBack = configuration["AmoCrm:SyncSettings:MessagesLookBackMonths"];
+            
+            if (!string.IsNullOrEmpty(eventsLookBack))
+                await settingsService.SetAsync("Sync", "EventsLookBackMonths", eventsLookBack, "System-Seed");
+            
+            if (!string.IsNullOrEmpty(messagesLookBack))
+                await settingsService.SetAsync("Sync", "MessagesLookBackMonths", messagesLookBack, "System-Seed");
+            
+            logger.LogInformation("✅ Ayarlar DB'ye aktarıldı!");
+        }
+    }
+}

@@ -26,5 +26,16 @@
   <ItemGroup>
     <ProjectReference Include="..\Ilvi.Modules.AmoCrm\Ilvi.Modules.AmoCrm.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="publish\web.config" />
+    <_ContentIncludedByDefault Remove="publish\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="publish\appsettings.json" />
+    <_ContentIncludedByDefault Remove="publish\Ilvi.Worker.AmoCrm.deps.json" />
+    <_ContentIncludedByDefault Remove="publish\Ilvi.Worker.AmoCrm.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="publish\Ilvi.Worker.AmoCrm.staticwebassets.endpoints.json" />
+  </ItemGroup>
+
+ 
  
 </Project>

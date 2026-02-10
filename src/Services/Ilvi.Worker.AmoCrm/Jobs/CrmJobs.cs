@@ -8,6 +8,7 @@ using Ilvi.Modules.AmoCrm.Features.Messages;
 using Ilvi.Modules.AmoCrm.Features.Pipelines;
 using Ilvi.Modules.AmoCrm.Features.Tasks;
 using Ilvi.Modules.AmoCrm.Features.TaskTypes;
+using Ilvi.Modules.AmoCrm.Features.Users;
 using MediatR;
 
 namespace Ilvi.Worker.AmoCrm.Jobs;
@@ -106,6 +107,13 @@ public class CrmJobs
     public async Task SyncTaskTypes(PerformContext context, CancellationToken ct)
     {
         await _mediator.Send(new SyncTaskTypesCommand { Context = context }, ct);
+    }
+    
+    
+    [JobDisplayName("👤 AmoCRM > Kullanıcılar (Users)")]
+    public async Task SyncUsers(PerformContext context, CancellationToken ct)
+    {
+        await _mediator.Send(new SyncUsersCommand { Context = context }, ct);
     }
     
     

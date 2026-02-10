@@ -1,26 +1,42 @@
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Options;
+using Ilvi.Modules.AmoCrm.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ilvi.Modules.AmoCrm.Infrastructure.Http;
 
 public class AmoAuthHandler : DelegatingHandler
 {
-    private readonly AmoCrmOptions _options;
+    private readonly IServiceProvider _serviceProvider;
 
-    public AmoAuthHandler(IOptions<AmoCrmOptions> options)
+    public AmoAuthHandler(IServiceProvider serviceProvider)
     {
-        _options = options.Value;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Token'ı header'a ekle
-        if (!string.IsNullOrEmpty(_options.AccessToken))
+        // Her istekte DB'den güncel token'ı al (cache'li)
+        using var scope = _serviceProvider.CreateScope();
+        var settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
+        
+        var options = await settingsService.GetAmoCrmOptionsAsync(cancellationToken);
+        
+        // Base URL ayarla (eğer istek zaten tam URL değilse)
+        if (request.RequestUri != null && !request.RequestUri.IsAbsoluteUri)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.AccessToken);
+            if (!string.IsNullOrEmpty(options.BaseUrl))
+            {
+                var baseUri = new Uri(options.BaseUrl);
+                request.RequestUri = new Uri(baseUri, request.RequestUri.ToString());
+            }
         }
 
-        // İstek devam etsin
+        // Token'ı header'a ekle
+        if (!string.IsNullOrEmpty(options.AccessToken))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", options.AccessToken);
+        }
+
         return await base.SendAsync(request, cancellationToken);
     }
 }

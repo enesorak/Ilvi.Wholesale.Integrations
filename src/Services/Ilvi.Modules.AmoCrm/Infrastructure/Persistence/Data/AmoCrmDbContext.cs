@@ -4,6 +4,7 @@ using Ilvi.Modules.AmoCrm.Domain.Events;
 using Ilvi.Modules.AmoCrm.Domain.Leads;
 using Ilvi.Modules.AmoCrm.Domain.Messages;
 using Ilvi.Modules.AmoCrm.Domain.Pipelines;
+using Ilvi.Modules.AmoCrm.Domain.Settings;
 using Ilvi.Modules.AmoCrm.Domain.Tasks;
 using Ilvi.Modules.AmoCrm.Domain.Users;
 using Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Configurations;
@@ -22,6 +23,7 @@ public class AmoCrmDbContext : AppDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<AmoEvent> Events { get; set; }
     public DbSet<AmoMessage> Messages { get; set; }
+    public DbSet<AppSetting> AppSettings { get; set; }
 
 
 protected override void OnModelCreating(ModelBuilder modelBuilder)

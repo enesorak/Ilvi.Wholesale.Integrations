@@ -16,7 +16,7 @@ public static class DependencyInjection
     {
         // 1. Ayarları Bind Et
         services.Configure<AmoCrmOptions>(configuration.GetSection("AmoCrm"));
-
+       
         // 2. Veritabanı
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<AmoCrmDbContext>(options =>
@@ -30,6 +30,12 @@ public static class DependencyInjection
                     maxRetryDelay: TimeSpan.FromSeconds(30), 
                     errorNumbersToAdd: null);
             }));
+        
+        services.AddMemoryCache();
+
+        // 3. Settings Service (DB'den ayarları okur) <-- BU SATIRLAR ÖNEMLİ
+        services.AddScoped<ISettingsService, SettingsService>();
+
 
         // 3. Auth Handler
         services.AddTransient<AmoAuthHandler>();
@@ -50,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IAmoRepository<,>), typeof(AmoRepository<,>));
         
         services.Configure<AmoCrmSyncSettings>(configuration.GetSection("AmoCrm:SyncSettings"));
-        return services;
+
+         return services;
     }
 }

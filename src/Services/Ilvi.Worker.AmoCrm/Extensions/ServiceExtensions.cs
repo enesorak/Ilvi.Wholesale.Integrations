@@ -50,6 +50,9 @@ public static class ServiceExtensions
                 }
             });
 
+            services.AddMemoryCache();
+            services.AddScoped<ISettingsService, SettingsService>();
+            
             // 3. MediatR
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAmoCrmService).Assembly));
         }

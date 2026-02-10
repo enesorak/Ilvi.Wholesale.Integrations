@@ -65,6 +65,8 @@ public static class JobEndpoints
                 "sync-events"               => job => job.SyncEvents(null!, CancellationToken.None),
                 "sync-messages"             => job => job.SyncMessages(null!, CancellationToken.None),
 
+                "sync-users" => job => job.SyncUsers(null!, CancellationToken.None),
+
                 _ => null 
             };
 
@@ -89,6 +91,20 @@ public static class JobEndpoints
         {
             manager.RemoveIfExists(id);
             return Results.Ok(new { message = $"Job '{id}' silindi." });
+        });
+        
+        // Tüm recurring jobları temizle
+        group.MapDelete("/clear-all", (IRecurringJobManager manager) =>
+        {
+            using var connection = JobStorage.Current.GetConnection();
+            var recurringJobs = connection.GetRecurringJobs();
+    
+            foreach (var job in recurringJobs)
+            {
+                manager.RemoveIfExists(job.Id);
+            }
+    
+            return Results.Ok(new { message = $"{recurringJobs.Count} job silindi." });
         });
     }
 }

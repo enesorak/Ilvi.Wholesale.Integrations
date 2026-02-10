@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar - İlvi Entegrasyon Paneli</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .input-field {
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .category-header {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .connection-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .connection-error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .setting-row:hover {
+            background: rgba(99, 102, 241, 0.02);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+<!-- Navigation -->
+<nav class="nav-glass px-6 py-4 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="/dashboard.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/30">
+                    İ
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-900">Sistem Ayarları</h1>
+                    <p class="text-xs text-gray-500">AmoCRM Entegrasyon Yapılandırması</p>
+                </div>
+            </a>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/dashboard.html" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Dashboard</span>
+            </a>
+            <button onclick="testConnection()" id="testBtn" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-all">
+                <i class="fa-solid fa-plug"></i>
+                <span>Bağlantı Test</span>
+            </button>
+            <button onclick="saveAllSettings()" class="flex items-center gap-2 px-4 py-2.5 btn-primary text-white rounded-xl text-sm font-semibold transition-all hover:shadow-lg">
+                <i class="fa-solid fa-save"></i>
+                <span>Kaydet</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Connection Status Card -->
+    <div id="connectionStatus" class="hidden mb-6">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-4">
+            <div id="statusIcon" class="w-12 h-12 rounded-xl flex items-center justify-center text-white">
+                <i class="fa-solid fa-check text-xl"></i>
+            </div>
+            <div>
+                <p id="statusTitle" class="font-semibold text-gray-900">Bağlantı Durumu</p>
+                <p id="statusMessage" class="text-sm text-gray-500">Test sonucu burada görünecek</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Container -->
+    <div id="settingsContainer" class="space-y-6">
+        <div class="glass-card rounded-2xl p-8 flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                <span class="text-gray-400 text-sm">Ayarlar yükleniyor...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="mt-8 glass-card rounded-2xl p-6">
+        <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-lightbulb text-amber-600"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Bilgi</h3>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• <strong>Access Token:</strong> AmoCRM panelinden uzun süreli token alabilirsiniz.</li>
+                    <li>• <strong>Page Size:</strong> AmoCRM maksimum 250 destekler.</li>
+                    <li>• <strong>Request Delay:</strong> Rate limit aşmamak için önerilen değer 200ms'dir.</li>
+                    <li>• Ayarlar kaydedildikten sonra otomatik olarak aktif olur (restart gerekmez).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/settings';
+    let originalSettings = {};
+    let currentSettings = {};
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    async function loadSettings() {
+        const container = document.getElementById('settingsContainer');
+
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+
+            originalSettings = JSON.parse(JSON.stringify(data));
+            currentSettings = data;
+
+            container.innerHTML = '';
+
+            // Her kategori için kart oluştur
+            for (const [category, settings] of Object.entries(data)) {
+                const categoryCard = createCategoryCard(category, settings);
+                container.appendChild(categoryCard);
+            }
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `
+                <div class="glass-card rounded-2xl p-8 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl text-red-500"></i>
+                    </div>
+                    <p class="text-red-500 font-medium">Ayarlar yüklenirken hata oluştu</p>
+                    <button onclick="loadSettings()" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Tekrar Dene
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    function createCategoryCard(category, settings) {
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-2xl overflow-hidden';
+
+        // Kategori başlığı
+        const categoryIcons = {
+            'AmoCrm': 'fa-solid fa-cloud',
+            'Sync': 'fa-solid fa-sync',
+            'General': 'fa-solid fa-cog'
+        };
+
+        const categoryNames = {
+            'AmoCrm': 'AmoCRM API Ayarları',
+            'Sync': 'Senkronizasyon Ayarları',
+            'General': 'Genel Ayarlar'
+        };
+
+        const icon = categoryIcons[category] || 'fa-solid fa-sliders';
+        const displayName = categoryNames[category] || category;
+
+        card.innerHTML = `
+            <div class="category-header px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                        <i class="${icon} text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-gray-900">${displayName}</h2>
+                        <p class="text-xs text-gray-500">${settings.length} ayar</p>
+                    </div>
+                </div>
+            </div>
+            <div class="divide-y divide-gray-50">
+                ${settings.map(s => createSettingRow(s)).join('')}
+            </div>
+        `;
+
+        return card;
+    }
+
+    function createSettingRow(setting) {
+        const inputType = setting.isSensitive ? 'password' : 'text';
+        const inputId = `setting_${setting.category}_${setting.key}`;
+
+        // Value type'a göre input
+        let inputHtml = '';
+
+        if (setting.valueType === 'Bool') {
+            inputHtml = `
+                <select id="${inputId}" 
+                    data-category="${setting.category}" 
+                    data-key="${setting.key}"
+                    class="input-field w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                    <option value="true" ${setting.value === 'true' ? 'selected' : ''}>Evet</option>
+                    <option value="false" ${setting.value === 'false' ? 'selected' : ''}>Hayır</option>
+                </select>
+            `;
+        } else if (setting.valueType === 'Int') {
+            inputHtml = `
+                <input type="number" 
+                    id="${inputId}" 
+                    data-category="${setting.category}" 
+                    data-key="${setting.key}"
+                    value="${setting.value}"
+                    class="input-field w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none font-mono"
+                    placeholder="Değer girin...">
+            `;
+        } else {
+            inputHtml = `
+                <div class="relative">
+                    <input type="${inputType}" 
+                        id="${inputId}" 
+                        data-category="${setting.category}" 
+                        data-key="${setting.key}"
+                        value="${setting.value}"
+                        class="input-field w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none ${setting.isSensitive ? 'font-mono pr-12' : ''}"
+                        placeholder="Değer girin...">
+                    ${setting.isSensitive ? `
+                        <button type="button" onclick="togglePasswordVisibility('${inputId}')" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-eye" id="${inputId}_icon"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="setting-row px-6 py-5 transition-colors">
+                <div class="flex items-start justify-between gap-8">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <label for="${inputId}" class="font-medium text-gray-900">${setting.key}</label>
+                            ${setting.isSensitive ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md text-[10px] font-semibold">
+                                    <i class="fa-solid fa-lock text-[8px]"></i> GİZLİ
+                                </span>
+                            ` : ''}
+                        </div>
+                        <p class="text-sm text-gray-500">${setting.description || 'Açıklama yok'}</p>
+                        ${setting.updatedAtUtc ? `
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fa-regular fa-clock mr-1"></i>
+                                Son güncelleme: ${formatDate(setting.updatedAtUtc)}
+                                ${setting.updatedBy ? ` (${setting.updatedBy})` : ''}
+                            </p>
+                        ` : ''}
+                    </div>
+                    <div class="w-80 flex-shrink-0">
+                        ${inputHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(`${inputId}_icon`);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleString('tr-TR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    async function saveAllSettings() {
+        const inputs = document.querySelectorAll('[data-category][data-key]');
+        const updates = [];
+
+        inputs.forEach(input => {
+            const category = input.dataset.category;
+            const key = input.dataset.key;
+            const value = input.value;
+
+            // Sadece değişenleri gönder (sensitive olmayan veya değişmiş olanlar)
+            const original = originalSettings[category]?.find(s => s.key === key);
+
+            // Sensitive alanlar için: boş değilse ve maskeli değilse gönder
+            if (original?.isSensitive) {
+                if (value && !value.includes('*')) {
+                    updates.push({ category, key, value });
+                }
+            } else if (original?.value !== value) {
+                updates.push({ category, key, value });
+            }
+        });
+
+        if (updates.length === 0) {
+            Toast.fire({ icon: 'info', title: 'Değişiklik yok' });
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/bulk`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    settings: updates,
+                    updatedBy: 'Admin' // TODO: Gerçek kullanıcı adı
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Toast.fire({ icon: 'success', title: result.message });
+                loadSettings(); // Yenile
+            } else {
+                Toast.fire({ icon: 'error', title: result.message });
+            }
+        } catch (error) {
+            Toast.fire({ icon: 'error', title: 'Kaydetme hatası!' });
+        }
+    }
+
+    async function testConnection() {
+        const btn = document.getElementById('testBtn');
+        const statusDiv = document.getElementById('connectionStatus');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Loading state
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Test Ediliyor...</span>';
+
+        try {
+            const response = await fetch(`${API_URL}/test-connection`, { method: 'POST' });
+            const result = await response.json();
+
+            statusDiv.classList.remove('hidden');
+
+            if (result.success) {
+                statusIcon.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-white connection-success';
+                statusIcon.innerHTML = '<i class="fa-solid fa-check text-xl"></i>';
+                statusTitle.textContent = 'Bağlantı Başarılı!';
+                statusTitle.className = 'font-semibold text-green-700';
+                statusMessage.textContent = result.message;
+            } else {
+                statusIcon.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-white connection-error';
+                statusIcon.innerHTML = '<i class="fa-solid fa-xmark text-xl"></i>';
+                statusTitle.textContent = 'Bağlantı Hatası';
+                statusTitle.className = 'font-semibold text-red-700';
+                statusMessage.textContent = result.message;
+            }
+
+        } catch (error) {
+            statusDiv.classList.remove('hidden');
+            statusIcon.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-white connection-error';
+            statusIcon.innerHTML = '<i class="fa-solid fa-xmark text-xl"></i>';
+            statusTitle.textContent = 'Bağlantı Hatası';
+            statusTitle.className = 'font-semibold text-red-700';
+            statusMessage.textContent = 'Sunucuya ulaşılamadı';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plug"></i> <span>Bağlantı Test</span>';
+        }
+    }
+
+    // İlk yükleme
+    loadSettings();
+</script>
+
+</body>
+</html>
