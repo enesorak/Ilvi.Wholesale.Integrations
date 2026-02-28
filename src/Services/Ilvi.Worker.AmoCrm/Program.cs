@@ -53,16 +53,16 @@ using (var scope = app.Services.CreateScope())
     var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
     // --- CONTACTS ---
-    recurringJobManager.AddOrUpdate<CrmJobs>("sync-contacts-incremental", job => job.SyncContactsIncremental(null!, default), Cron.MinuteInterval(30));
+   // recurringJobManager.AddOrUpdate<CrmJobs>("sync-contacts-incremental", job => job.SyncContactsIncremental(null!, default), Cron.MinuteInterval(30));
     recurringJobManager.AddOrUpdate<CrmJobs>("sync-contacts-full", job => job.SyncContactsFull(null!, default), Cron.Daily(3));
 
     // --- LEADS ---
-    recurringJobManager.AddOrUpdate<CrmJobs>("sync-leads-incremental", job => job.SyncLeadsIncremental(null!, default), Cron.MinuteInterval(30));
+  //  recurringJobManager.AddOrUpdate<CrmJobs>("sync-leads-incremental", job => job.SyncLeadsIncremental(null!, default), Cron.MinuteInterval(30));
     recurringJobManager.AddOrUpdate<CrmJobs>("sync-leads-full", job => job.SyncLeadsFull(null!, default), Cron.Daily(3, 30));
 
   
     // --- TASKS ---
-    recurringJobManager.AddOrUpdate<CrmJobs>("sync-tasks-incremental", job => job.SyncTasksIncremental(null!, default), "20,50 * * * *");
+   // recurringJobManager.AddOrUpdate<CrmJobs>("sync-tasks-incremental", job => job.SyncTasksIncremental(null!, default), "20,50 * * * *");
     recurringJobManager.AddOrUpdate<CrmJobs>("sync-tasks-full", job => job.SyncTasksFull(null!, default), Cron.Daily(4, 30));
 
     // --- DEFINITIONS ---
@@ -80,8 +80,8 @@ using (var scope = app.Services.CreateScope())
     );
 
     // --- EVENTS & MESSAGES ---
-    recurringJobManager.AddOrUpdate<CrmJobs>("sync-events", job => job.SyncEvents(null!, default), Cron.Hourly());
-    recurringJobManager.AddOrUpdate<CrmJobs>("sync-messages", job => job.SyncMessages(null!, default), Cron.MinuteInterval(15));
+    recurringJobManager.AddOrUpdate<CrmJobs>("sync-events", job => job.SyncEvents(null!, default), Cron.Daily(6));
+    recurringJobManager.AddOrUpdate<CrmJobs>("sync-messages", job => job.SyncMessages(null!, default), Cron.Daily(6));
 
 recurringJobManager.AddOrUpdate<CrmJobs>(
     "sync-users", 

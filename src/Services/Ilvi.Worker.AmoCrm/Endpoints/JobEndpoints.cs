@@ -46,16 +46,16 @@ public static class JobEndpoints
             Expression<Func<CrmJobs, Task>>? jobExpression = req.Id switch
             {
                 // Contacts
-                "sync-contacts-incremental" => job => job.SyncContactsIncremental(null!, CancellationToken.None),
+              //  "sync-contacts-incremental" => job => job.SyncContactsIncremental(null!, CancellationToken.None),
                 "sync-contacts-full"        => job => job.SyncContactsFull(null!, CancellationToken.None),
                 
                 // Leads
-                "sync-leads-incremental"    => job => job.SyncLeadsIncremental(null!, CancellationToken.None),
+               // "sync-leads-incremental"    => job => job.SyncLeadsIncremental(null!, CancellationToken.None),
                 "sync-leads-full"           => job => job.SyncLeadsFull(null!, CancellationToken.None),
 
             
                 // Tasks
-                "sync-tasks-incremental"    => job => job.SyncTasksIncremental(null!, CancellationToken.None),
+              //  "sync-tasks-incremental"    => job => job.SyncTasksIncremental(null!, CancellationToken.None),
                 "sync-tasks-full"           => job => job.SyncTasksFull(null!, CancellationToken.None),
  
                 "sync-pipelines"  => job => job.SyncPipelines(null!, CancellationToken.None),

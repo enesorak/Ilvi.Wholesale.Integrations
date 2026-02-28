@@ -39,6 +39,7 @@ public static class DependencyInjection
 
         // 3. Auth Handler
         services.AddTransient<AmoAuthHandler>();
+        services.AddTransient<AmoCrmRateLimitHandler>();
 
         // 4. HttpClient ve Servis Kaydı
         services.AddHttpClient<IAmoCrmService, AmoCrmService>((provider, client) =>
@@ -49,8 +50,8 @@ public static class DependencyInjection
                     client.BaseAddress = new Uri(options.BaseUrl);
                 }
             })
-            .AddHttpMessageHandler<AmoAuthHandler>(); // Token'ı otomatik ekle
-
+       
+            .AddHttpMessageHandler<AmoCrmRateLimitHandler>();  // ← bu satır eklendi
         // Repository Kaydı
         
         services.AddScoped(typeof(IAmoRepository<,>), typeof(AmoRepository<,>));
