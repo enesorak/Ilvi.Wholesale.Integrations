@@ -73,7 +73,7 @@ public class SyncEventsCommandHandler : IRequestHandler<SyncEventsCommand, bool>
                             "company_added,company_deleted,company_restored,company_linked,company_unlinked," +
                             "task_added,task_deleted,task_completed,task_type_changed,task_text_changed,task_deadline_changed," +
                             "entity_tag_added,entity_tag_deleted,entity_linked,entity_unlinked,entity_merged,sale_field_changed," +
-                            "common_note_added,common_note_deleted";
+                            "common_note_added,common_note_deleted,entity_responsible_changed";
 
         string endpointUrl = $"events?filter[created_at][from]={timestamp}&filter[type]={eventTypes}&order[created_at]=asc";
         

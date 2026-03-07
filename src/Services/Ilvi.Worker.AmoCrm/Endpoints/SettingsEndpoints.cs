@@ -146,58 +146,72 @@ public static class SettingsEndpoints
         });
 
         // 6. AmoCRM bağlantı testi
-        group.MapPost("/test-connection", async (
-            ISettingsService settingsService,
-            IHttpClientFactory httpClientFactory,
-            CancellationToken ct) =>
+ group.MapPost("/test-connection", async (
+    ISettingsService settingsService,
+    IHttpClientFactory httpClientFactory,
+    IConfiguration configuration,
+    CancellationToken ct) =>
+{
+    try
+    {
+        // 1. Önce DB'den dene
+        string baseUrl = "";
+        string token = "";
+
+        try
         {
-            try
-            {
-                var options = await settingsService.GetAmoCrmOptionsAsync(ct);
-                
-                if (string.IsNullOrEmpty(options.BaseUrl) || string.IsNullOrEmpty(options.AccessToken))
-                {
-                    return Results.BadRequest(new { success = false, message = "BaseUrl veya AccessToken boş!" });
-                }
+            var options = await settingsService.GetAmoCrmOptionsAsync(ct);
+            baseUrl = options.BaseUrl ?? "";
+            token = options.AccessToken ?? "";
+        }
+        catch { /* DB boş olabilir */ }
 
-                using var client = httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri(options.BaseUrl);
-                client.DefaultRequestHeaders.Authorization = 
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", options.AccessToken);
-                client.Timeout = TimeSpan.FromSeconds(10);
+        // 2. Boşsa appsettings'den al
+        if (string.IsNullOrEmpty(baseUrl))
+            baseUrl = configuration["AmoCrm:BaseUrl"] ?? "";
+        if (string.IsNullOrEmpty(token))
+            token = configuration["AmoCrm:AccessToken"] ?? "";
 
-                var response = await client.GetAsync("account", ct);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync(ct);
-                    return Results.Ok(new 
-                    { 
-                        success = true, 
-                        message = "Bağlantı başarılı!",
-                        statusCode = (int)response.StatusCode
-                    });
-                }
-                else
-                {
-                    return Results.Ok(new 
-                    { 
-                        success = false, 
-                        message = $"API hatası: {response.StatusCode}",
-                        statusCode = (int)response.StatusCode
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Results.Ok(new 
-                { 
-                    success = false, 
-                    message = $"Bağlantı hatası: {ex.Message}"
-                });
-            }
+        // 3. Hala boşsa hata ver
+        if (string.IsNullOrEmpty(baseUrl))
+            return Results.BadRequest(new { success = false, message = "BaseUrl tanımlı değil! Önce ayarları kaydedin." });
+        if (string.IsNullOrEmpty(token))
+            return Results.BadRequest(new { success = false, message = "AccessToken tanımlı değil! Önce token kaydedin." });
+
+        // 4. URL düzelt
+        if (!baseUrl.StartsWith("http"))
+            baseUrl = "https://" + baseUrl;
+        if (!baseUrl.EndsWith("/"))
+            baseUrl += "/";
+
+        // 5. Test
+        using var client = new HttpClient();
+        client.BaseAddress = new Uri(baseUrl);
+        client.Timeout = TimeSpan.FromSeconds(15);
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync("account", ct);
+
+        return Results.Ok(new
+        {
+            success = response.IsSuccessStatusCode,
+            statusCode = (int)response.StatusCode,
+            baseUrl,
+            message = response.IsSuccessStatusCode
+                ? "✅ Bağlantı başarılı!"
+                : $"❌ API hatası: {response.StatusCode}"
         });
-
+    }
+    catch (UriFormatException)
+    {
+        return Results.Ok(new { success = false, statusCode = 0, message = "❌ Geçersiz URL formatı!" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { success = false, statusCode = 0, message = $"❌ {ex.Message}" });
+    }
+});
         // 7. Cache temizle
         group.MapPost("/invalidate-cache", (ISettingsService settingsService) =>
         {

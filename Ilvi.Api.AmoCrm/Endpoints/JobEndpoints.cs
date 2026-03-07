@@ -208,7 +208,24 @@ public static class JobEndpoints
                 stats.Deleted, stats.Scheduled, stats.Servers, stats.Queues, stats.Recurring
             });
         });
+        
+        // 13. One-time job (tek seferlik, recurring oluşturmaz)
+        group.MapPost("/run/{id}", (string id, IBackgroundJobClient client) =>
+        {
+            if (!JobRegistry.TryGetValue(id, out var def))
+                return Results.NotFound(new { message = $"Job '{id}' tanımlı değil.", availableJobs = JobRegistry.Keys });
+
+            var jobId = client.Enqueue(def.Expression);
+
+            return Results.Ok(new
+            {
+                message = $"✅ '{def.DisplayName}' tek seferlik başlatıldı.",
+                hangfireJobId = jobId
+            });
+        });
     }
+    
+    
 
     private record JobDefinition(string DisplayName, string Description, string DefaultCron, Expression<Func<CrmJobs, Task>> Expression);
 }

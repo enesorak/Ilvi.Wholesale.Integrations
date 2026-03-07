@@ -27,4 +27,5 @@
 
         <ProjectReference Include="..\src\Services\Ilvi.Modules.AmoCrm\Ilvi.Modules.AmoCrm.csproj" />
     </ItemGroup>
+    
 </Project>

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
+namespace Ilvi.Modules.AmoCrm.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -11,6 +11,28 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AppSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Key = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
+                    ValueType = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsSensitive = table.Column<bool>(type: "bit", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppSettings", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Contacts",
                 columns: table => new
@@ -43,9 +65,10 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
                     EntityId = table.Column<long>(type: "bigint", nullable: false),
                     EntityType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CreatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    EventAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ValueAfter = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ValueBefore = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EventAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CheckedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ComputedHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -66,7 +89,7 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
                     ResponsibleUserId = table.Column<long>(type: "bigint", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Price = table.Column<int>(type: "int", nullable: false),
-                    StatusId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     PipelineId = table.Column<int>(type: "int", nullable: false),
                     LossReasonId = table.Column<int>(type: "int", nullable: true),
                     Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -93,9 +116,10 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
                     ContactId = table.Column<long>(type: "bigint", nullable: false),
                     EntityId = table.Column<long>(type: "bigint", nullable: false),
                     AuthorId = table.Column<long>(type: "bigint", nullable: false),
+                    EventAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EventType = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Text = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
-                    EventAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CheckedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ComputedHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -115,7 +139,7 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Sort = table.Column<int>(type: "int", nullable: false),
                     IsMain = table.Column<bool>(type: "bit", nullable: false),
-                    Statuses = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CheckedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -193,11 +217,20 @@ namespace Ilvi.Modules.AmoCrm.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppSettings_Category_Key",
+                table: "AppSettings",
+                columns: new[] { "Category", "Key" },
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AppSettings");
+
             migrationBuilder.DropTable(
                 name: "Contacts");
 
