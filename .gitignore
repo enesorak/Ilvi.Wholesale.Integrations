@@ -51,4 +51,5 @@ appsettings.Local.json
 *.local.json
 
 # Publish output
-publish/
+publish/appsettings.json
+appsettings.*.json
