@@ -36,74 +36,76 @@ public class CrmJobs
 
     // --- CONTACTS ---
     [JobDisplayName("👥 Kişiler (Incremental)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncContactsIncremental(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-contacts", "👥 Kişiler (Incremental)", context, ct,
             () => _mediator.Send(new SyncContactsCommand { Context = context, IsFullSync = false }, ct));
 
     [JobDisplayName("🌕 Kişiler (Full Sync)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncContactsFull(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-contacts", "🌕 Kişiler (Full)", context, ct,
             () => _mediator.Send(new SyncContactsCommand { Context = context, IsFullSync = true }, ct));
 
     // --- LEADS ---
     [JobDisplayName("💼 Fırsatlar (Incremental)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncLeadsIncremental(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-leads", "💼 Fırsatlar (Incremental)", context, ct,
             () => _mediator.Send(new SyncLeadsCommand { Context = context, IsFullSync = false }, ct));
 
     [JobDisplayName("🌕 Fırsatlar (Full Sync)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncLeadsFull(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-leads", "🌕 Fırsatlar (Full)", context, ct,
             () => _mediator.Send(new SyncLeadsCommand { Context = context, IsFullSync = true }, ct));
 
     // --- TASKS ---
     [JobDisplayName("📅 Görevler (Incremental)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncTasksIncremental(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-tasks", "📅 Görevler (Incremental)", context, ct,
             () => _mediator.Send(new SyncTasksCommand { Context = context, IsFullSync = false }, ct));
 
     [JobDisplayName("🌕 Görevler (Full Sync)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncTasksFull(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-tasks", "🌕 Görevler (Full)", context, ct,
             () => _mediator.Send(new SyncTasksCommand { Context = context, IsFullSync = true }, ct));
 
     // --- EVENTS ---
     [JobDisplayName("📜 Olaylar (Events)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncEvents(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-events", "📜 Olaylar", context, ct,
             () => _mediator.Send(new SyncEventsCommand { Context = context }, ct));
 
     // --- MESSAGES ---
     [JobDisplayName("💬 Mesajlar (Chat)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncMessages(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-messages", "💬 Mesajlar", context, ct,
             () => _mediator.Send(new SyncMessagesCommand { Context = context }, ct));
 
     // --- PIPELINES ---
     [JobDisplayName("📊 Satış Boru Hatları (Pipelines)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncPipelines(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-pipelines", "📊 Pipelines", context, ct,
             () => _mediator.Send(new SyncPipelinesCommand { Context = context }, ct));
 
     // --- TASK TYPES ---
     [JobDisplayName("📝 Görev Tipleri (Task Types)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
     public async Task SyncTaskTypes(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-task-types", "📝 Görev Tipleri", context, ct,
             () => _mediator.Send(new SyncTaskTypesCommand { Context = context }, ct));
 
     // --- USERS ---
     [JobDisplayName("👤 Kullanıcılar (Users)")]
-    [DisableConcurrentExecution(timeoutInSeconds: 3600)]
+   
+    
+    
     public async Task SyncUsers(PerformContext context, CancellationToken ct)
         => await RunSafe("sync-users", "👤 Kullanıcılar", context, ct,
             () => _mediator.Send(new SyncUsersCommand { Context = context }, ct));

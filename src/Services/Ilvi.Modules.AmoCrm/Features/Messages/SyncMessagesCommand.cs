@@ -127,6 +127,7 @@ public class SyncMessagesCommandHandler : IRequestHandler<SyncMessagesCommand, b
                     ChatId = chatId,
                     AuthorId = UserId.From(createdBy),
                     Text = text,
+                    EventAtUtc = createdAt,        // ← EKSİK OLAN BU
 
                     // BaseEntity Alanları
                     Raw = json,
